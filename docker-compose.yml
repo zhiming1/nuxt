@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  nuxt:
+    build:
+      context: ./
+    container_name: nuxt
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    volumes:
+      - ./:/app
+
+  redis:
+    image: redis:7.0
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
+    platform: linux/arm64/v8 
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./default.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+      # - ./dist:/var/www/html
+    depends_on:
+      - nuxt
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
